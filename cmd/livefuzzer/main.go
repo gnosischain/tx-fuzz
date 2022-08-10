@@ -150,11 +150,12 @@ func SendBaikalTransactions(client *rpc.Client, key *ecdsa.PrivateKey, f *filler
 		if err != nil {
 			panic(err)
 		}
-		err = backend.SendTransaction(context.Background(), signedTx)
-		if err == nil {
-			nonce++
+		if err = backend.SendTransaction(context.Background(), signedTx); err != nil {
+			fmt.Printf("Could not send tx{hash: %v, sender: %v, nonce: %v}", tx.Hash().Hex(), sender.Hex(), tx.Nonce())
+			continue
 		}
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		nonce++
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 		defer cancel()
 		if _, err := bind.WaitMined(ctx, backend, signedTx); err != nil {
 			fmt.Printf("Wait mined failed: %v\n", err)
