@@ -151,7 +151,7 @@ func SendBaikalTransactions(client *rpc.Client, key *ecdsa.PrivateKey, f *filler
 			panic(err)
 		}
 		if err = backend.SendTransaction(context.Background(), signedTx); err != nil {
-			fmt.Printf("Could not send tx{hash: %v, sender: %v, nonce: %v}\n", tx.Hash().Hex(), sender.Hex(), tx.Nonce())
+			fmt.Printf("Could not send tx{hash: %v, sender: %v, nonce: %v}: %v\n", tx.Hash().Hex(), sender.Hex(), tx.Nonce(), err)
 			continue
 		}
 		nonce++
