@@ -65,7 +65,8 @@ func main() {
 	case "airdrop":
 		airdrop(airdropValue)
 	case "spam":
-		for airdrop(airdropValue) {
+		for {
+			airdrop(airdropValue)
 			SpamTransactions(uint64(txPerAccount), false, accesslist, seed)
 			time.Sleep(10 * time.Second)
 		}
@@ -159,6 +160,7 @@ func SendBaikalTransactions(client *rpc.Client, key *ecdsa.PrivateKey, f *filler
 		if _, err := bind.WaitMined(ctx, backend, signedTx); err != nil {
 			fmt.Printf("Wait mined failed: %v\n", err)
 		}
+		fmt.Printf("Included tx{hash: %v, sender: %v, nonce: %v}\n", tx.Hash().Hex(), sender.Hex(), tx.Nonce())
 	}
 }
 
