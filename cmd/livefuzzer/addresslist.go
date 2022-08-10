@@ -244,7 +244,7 @@ func createAddresses(N int) ([]string, []string) {
 	return keys, addrs
 }
 
-func airdrop(value *big.Int) {
+func airdrop(value *big.Int) bool {
 	client, sk, _ := getRealBackend()
 	backend := ethclient.NewClient(client)
 	sender := common.HexToAddress(txfuzz.ADDR)
@@ -252,13 +252,13 @@ func airdrop(value *big.Int) {
 	chainid, err := backend.ChainID(context.Background())
 	if err != nil {
 		fmt.Printf("could not airdrop: %v\n", err)
-		return
+		return false
 	}
 	for _, addr := range addrs {
 		nonce, err := backend.PendingNonceAt(context.Background(), sender)
 		if err != nil {
 			fmt.Printf("could not airdrop: %v\n", err)
-			return
+			return false
 		}
 		to := common.HexToAddress(addr)
 		gp, _ := backend.SuggestGasPrice(context.Background())
@@ -266,10 +266,11 @@ func airdrop(value *big.Int) {
 		signedTx, _ := types.SignTx(tx2, types.LatestSignerForChainID(chainid), sk)
 		if err := backend.SendTransaction(context.Background(), signedTx); err != nil {
 			fmt.Printf("could not airdrop: %v\n", err)
-			return
+			return false
 		}
 		tx = signedTx
 	}
 	// Wait for the last transaction to be mined
 	bind.WaitMined(context.Background(), backend, tx)
+	return true
 }
