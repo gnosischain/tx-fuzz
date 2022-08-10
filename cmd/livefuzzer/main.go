@@ -65,8 +65,7 @@ func main() {
 	case "airdrop":
 		airdrop(airdropValue)
 	case "spam":
-		for {
-			airdrop(airdropValue)
+		for airdrop(airdropValue) {
 			SpamTransactions(uint64(txPerAccount), false, accesslist, seed)
 			time.Sleep(10 * time.Second)
 		}
