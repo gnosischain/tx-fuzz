@@ -67,7 +67,6 @@ func main() {
 	case "spam":
 		for airdrop(airdropValue) {
 			SpamTransactions(uint64(txPerAccount), false, accesslist, seed)
-			time.Sleep(10 * time.Second)
 		}
 	case "corpus":
 		cp, err := readCorpusElements(os.Args[2])
@@ -137,12 +136,12 @@ func SendBaikalTransactions(client *rpc.Client, key *ecdsa.PrivateKey, f *filler
 	for i := uint64(0); i < N; i++ {
 		nonce, err := backend.NonceAt(context.Background(), sender, big.NewInt(-1))
 		if err != nil {
-			fmt.Printf("Could not get nonce: %v\n", nonce)
+			fmt.Printf("Could not get nonce: %v\n", err)
 			continue
 		}
-		tx, err := txfuzz.RandomValidTx(client, f, sender, nonce, nil, nil, al)
+		tx, err := txfuzz.RandomValidTx(client, f, sender, nonce, nil, chainid, al)
 		if err != nil {
-			fmt.Printf("Could not create valid tx: %v\n", nonce)
+			fmt.Printf("Could not create valid tx: %v\n", err)
 			continue
 		}
 		signedTx, err := types.SignTx(tx, types.NewLondonSigner(chainid), key)
@@ -150,7 +149,7 @@ func SendBaikalTransactions(client *rpc.Client, key *ecdsa.PrivateKey, f *filler
 			panic(err)
 		}
 		if err = backend.SendTransaction(context.Background(), signedTx); err != nil {
-			fmt.Printf("Could not send tx{hash: %v, sender: %v, nonce: %v}: %v\n", tx.Hash().Hex(), sender.Hex(), tx.Nonce(), err)
+			fmt.Printf("Could not send tx{sender: %v, nonce: %v}: %v\n", sender.Hex(), tx.Nonce(), err)
 			continue
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)

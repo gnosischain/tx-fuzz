@@ -272,6 +272,6 @@ func airdrop(value *big.Int) bool {
 	}
 	// Wait for the last transaction to be mined
 	bind.WaitMined(context.Background(), backend, tx)
-	fmt.Printf("airdrop succesful")
+	fmt.Printf("airdrop succesful\n")
 	return true
 }
