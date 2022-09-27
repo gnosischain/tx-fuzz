@@ -153,13 +153,15 @@ func SendBaikalTransactions(client *rpc.Client, key *ecdsa.PrivateKey, f *filler
 			fmt.Printf("Could not send tx{hash: %v, sender: %v, nonce: %v}: %v\n", tx.Hash().Hex(), sender.Hex(), tx.Nonce(), err)
 			continue
 		}
-		nonce++
-		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-		defer cancel()
-		if _, err := bind.WaitMined(ctx, backend, signedTx); err != nil {
-			fmt.Printf("Wait mined failed: %v\n", err)
-		}
-		fmt.Printf("Included tx{hash: %v, sender: %v, nonce: %v}\n", tx.Hash().Hex(), sender.Hex(), tx.Nonce())
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+		go func() {
+			defer cancel()
+			if _, err := bind.WaitMined(ctx, backend, signedTx); err != nil {
+				fmt.Printf("Wait mined failed: %v\n", err)
+			}
+			fmt.Printf("Included tx{hash: %v, sender: %v, nonce: %v}\n", tx.Hash().Hex(), sender.Hex(), tx.Nonce())
+		}()
+		time.Sleep(time.Second)
 	}
 }
 
