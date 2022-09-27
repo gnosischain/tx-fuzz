@@ -254,12 +254,12 @@ func airdrop(value *big.Int) bool {
 		fmt.Printf("could not airdrop: %v\n", err)
 		return false
 	}
-	nonce, err := backend.PendingNonceAt(context.Background(), sender)
-	if err != nil {
-		fmt.Printf("could not airdrop: %v\n", err)
-		return false
-	}
 	for _, addr := range addrs {
+		nonce, err := backend.PendingNonceAt(context.Background(), sender)
+		if err != nil {
+			fmt.Printf("could not airdrop: %v\n", err)
+			return false
+		}
 		to := common.HexToAddress(addr)
 		gp, _ := backend.SuggestGasPrice(context.Background())
 		tx2 := types.NewTransaction(nonce, to, value, 21000, gp, nil)
@@ -269,7 +269,6 @@ func airdrop(value *big.Int) bool {
 			return false
 		}
 		tx = signedTx
-		nonce++
 	}
 	// Wait for the last transaction to be mined
 	bind.WaitMined(context.Background(), backend, tx)
