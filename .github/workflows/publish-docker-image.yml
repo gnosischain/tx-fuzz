@@ -48,13 +48,9 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
           echo "${DOCKER_PASSWORD}" | docker login --username "${{ steps.settings.outputs.docker_username }}" --password-stdin
-      - name: Building image
+      - name: Building and publishing image
         run: |
-          docker buildx build --platform=linux/amd64,linux/arm64 -t "${{ steps.settings.outputs.docker_image }}:${{ steps.settings.outputs.TAG }}" -f ${{ steps.settings.outputs.dockerfile }} .
-      - name: Pushing image to Docker Hub
-        run: |
-          docker push "${{ steps.settings.outputs.docker_image }}:latest"
-          docker push "${{ steps.settings.outputs.docker_image }}:${{ steps.settings.outputs.TAG }}"
+          docker buildx build --platform=linux/amd64,linux/arm64 --push -t "${{ steps.settings.outputs.docker_image }}:${{ steps.settings.outputs.TAG }}" -f ${{ steps.settings.outputs.dockerfile }} .
       - name: Clearing
         if: always()
         run: |
