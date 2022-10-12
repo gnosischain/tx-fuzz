@@ -30,7 +30,7 @@ jobs:
         id: settings
         run: |
           echo ::set-output name=docker_username::${{ secrets.DOCKER_USERNAME }}
-          if ["$GITHUB_EVENT_NAME" == "push"] then
+          if [ "$GITHUB_EVENT_NAME" == "push" ]; then
             echo ::set-output name=docker_image::nethermindeth/tx-fuzz
             echo ::set-output name=dockerfile::Dockerfile
             echo ::set-output name=TAG::latest
