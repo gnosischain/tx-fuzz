@@ -30,9 +30,15 @@ jobs:
         id: settings
         run: |
           echo ::set-output name=docker_username::${{ secrets.DOCKER_USERNAME }}
-          echo ::set-output name=docker_image::${{ github.event.inputs.repo }}
-          echo ::set-output name=dockerfile::${{ github.event.inputs.dockerfile }}
-          echo ::set-output name=TAG::${{ github.event.inputs.tag }}
+          if ["$GITHUB_EVENT_NAME" == "push"] then
+            echo ::set-output name=docker_image::nethermindeth/tx-fuzz
+            echo ::set-output name=dockerfile::Dockerfile
+            echo ::set-output name=TAG::latest
+          else
+            echo ::set-output name=docker_image::${{ github.event.inputs.repo }}
+            echo ::set-output name=dockerfile::${{ github.event.inputs.dockerfile }}
+            echo ::set-output name=TAG::${{ github.event.inputs.tag }}
+          fi
       - name: Setting up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v1
