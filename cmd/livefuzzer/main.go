@@ -10,6 +10,8 @@ import (
 	"math/big"
 	"math/rand"
 	"os"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -32,41 +34,55 @@ var (
 )
 
 func main() {
-	// eth.sendTransaction({from:personal.listAccounts[0], to:"0xb02A2EdA1b317FBd16760128836B0Ac59B560e9D", value: "100000000000000"})
-	if len(os.Args) < 2 {
-		panic("invalid amount of args, need 2")
+	if len(os.Args) < 6 || len(os.Args) > 8 {
+		panic("invalid amount of args, need from 6 to 8 args")
 	}
 
-	var (
-		accesslist = true
-		seed       *int64
-	)
+	address = os.Args[2]
 
-	var offset int
-	if len(os.Args) >= 3 {
-		a := common.LeftPadBytes(common.FromHex(os.Args[2]), 8)
+	txfuzz.SK = os.Args[3]
+	sk := crypto.ToECDSAUnsafe(common.FromHex(txfuzz.SK))
+	txfuzz.ADDR = crypto.PubkeyToAddress(sk.PublicKey).Hex()
+
+	mnemonic := os.Args[4]
+
+	startIdxStr, endIdxStr, isRange := strings.Cut(os.Args[5], "..")
+	startIdx, err := strconv.Atoi(startIdxStr)
+	if err != nil {
+		panic(err)
+	}
+	endIdx := startIdx + 1
+	if isRange {
+		endIdx, err = strconv.Atoi(endIdxStr)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	var seed *int64
+	if len(os.Args) > 6 {
+		a := common.LeftPadBytes(common.FromHex(os.Args[6]), 8)
 		s := int64(binary.BigEndian.Uint64(a))
 		seed = &s
-		offset += 1
 	}
 
-	if len(os.Args) > 3+offset && os.Args[3+offset] == "no-al" {
-		accesslist = false
-		offset += 1
+	al := false
+	if len(os.Args) > 7 {
+		alArg, err := strconv.ParseBool(os.Args[7])
+		if err != nil {
+			panic(err)
+		}
+		al = alArg
 	}
 
-	if len(os.Args) > 3+offset {
-		txfuzz.SK = os.Args[3+offset]
-		sk := crypto.ToECDSAUnsafe(common.FromHex(txfuzz.SK))
-		txfuzz.ADDR = crypto.PubkeyToAddress(sk.PublicKey).Hex()
-	}
+	initAccounts(mnemonic, startIdx, endIdx)
 
 	switch os.Args[1] {
 	case "airdrop":
 		airdrop(airdropValue)
 	case "spam":
 		for airdrop(airdropValue) {
-			SpamTransactions(uint64(txPerAccount), false, accesslist, seed)
+			SpamTransactions(uint64(txPerAccount), false, al, seed)
 		}
 	case "corpus":
 		cp, err := readCorpusElements(os.Args[2])
@@ -74,7 +90,7 @@ func main() {
 			panic(err)
 		}
 		corpus = cp
-		SpamTransactions(uint64(txPerAccount), true, accesslist, seed)
+		SpamTransactions(uint64(txPerAccount), true, al, seed)
 	case "unstuck":
 		unstuckTransactions()
 	case "send":
