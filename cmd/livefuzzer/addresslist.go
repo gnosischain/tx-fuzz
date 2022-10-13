@@ -31,12 +31,12 @@ func initAccounts(mnemonic string, startIdx, endIdx int) {
 		panic(err)
 	}
 
-	key := masterKey
 	for idx := startIdx; idx < endIdx; idx++ {
 		path, err := accounts.ParseDerivationPath(strconv.Itoa(idx))
 		if err != nil {
 			panic(err)
 		}
+        key := masterKey
 		for _, edge := range path {
 			key, err = key.NewChildKey(edge)
 			if err != nil {
@@ -58,7 +58,7 @@ func initAccounts(mnemonic string, startIdx, endIdx int) {
 		keys = append(keys, skHex)
 		addrs = append(addrs, addrHex)
 
-        fmt.Printf("Generated account to send txs from: %v\n", addrHex)
+        fmt.Printf("Generated account derived at %v to send txs from: %v\n", idx, addrHex)
 	}
 }
 
