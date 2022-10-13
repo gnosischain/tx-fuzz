@@ -1,4 +1,4 @@
-FROM golang:1.17-alpine AS builder
+FROM golang:1.18-alpine AS builder
 
 # We disable CGO here due to:
 # 1) https://github.com/golang/go/issues/28065 that prevents 'go test' from running inside an Alpine container
