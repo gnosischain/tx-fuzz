@@ -34,6 +34,11 @@ var (
 )
 
 func main() {
+    if len(os.Args) == 1 {
+        fmt.Printf("%v <command> <rpc-url> <pvkey> <mnemonic> <start..end> [<hex-formatted-seed>] [<bool-access-list>]\n", os.Args[0])
+        return
+    }
+
 	if len(os.Args) < 6 || len(os.Args) > 8 {
 		panic("invalid amount of args, need from 6 to 8 args")
 	}

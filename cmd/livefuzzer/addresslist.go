@@ -49,14 +49,16 @@ func initAccounts(mnemonic string, startIdx, endIdx int) {
 			panic(err)
 		}
 
-		addr := crypto.PubkeyToAddress(sk.PublicKey)
+		addrHex := crypto.PubkeyToAddress(sk.PublicKey).Hex()
 		skHex := "0x" + common.Bytes2Hex(crypto.FromECDSA(sk))
 		// Sanity check marshalling
 		if _, err := crypto.ToECDSA(crypto.FromECDSA(sk)); err != nil {
 			panic(err)
 		}
 		keys = append(keys, skHex)
-		addrs = append(addrs, addr.Hex())
+		addrs = append(addrs, addrHex)
+
+        fmt.Printf("Generated account to send txs from: %v\n", addrHex)
 	}
 }
 
