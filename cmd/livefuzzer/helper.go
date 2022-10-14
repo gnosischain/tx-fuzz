@@ -37,7 +37,7 @@ func sendTx(sk *ecdsa.PrivateKey, backend *ethclient.Client, to common.Address, 
 		return err
 	}
 	gp, _ := backend.SuggestGasPrice(context.Background())
-	tx := types.NewTransaction(nonce, to, value, 500000, gp.Mul(gp, common.Big2), nil)
+	tx := types.NewTransaction(nonce, to, value, 500000, gp.Mul(gp.Add(gp, common.Big1), common.Big2), nil)
 	signedTx, _ := types.SignTx(tx, types.NewEIP155Signer(chainid), sk)
 	return backend.SendTransaction(context.Background(), signedTx)
 }
@@ -59,7 +59,7 @@ func unstuck(sk *ecdsa.PrivateKey, backend *ethclient.Client, sender, to common.
 	if gasPrice == nil {
 		gasPrice, _ = backend.SuggestGasPrice(context.Background())
 	}
-	tx := types.NewTransaction(nonce, to, value, 21000, gasPrice.Mul(gasPrice, common.Big2), nil)
+	tx := types.NewTransaction(nonce, to, value, 21000, gasPrice.Mul(gasPrice.Add(gasPrice, common.Big1), common.Big2), nil)
 	signedTx, _ := types.SignTx(tx, types.NewEIP155Signer(chainid), sk)
 	return backend.SendTransaction(context.Background(), signedTx)
 }

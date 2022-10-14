@@ -43,8 +43,8 @@ func RandomValidTx(rpc *rpc.Client, f *filler.Filler, sender common.Address, non
 			if err != nil {
 				gasPrice = big.NewInt(1)
 			} else {
-                gasPrice.Mul(gasPrice, common.Big2)
-            }
+				gasPrice.Mul(gasPrice.Add(gasPrice, common.Big1), common.Big2)
+			}
 		}
 		if chainID == nil {
 			chainID, err = client.ChainID(context.Background())
@@ -181,5 +181,5 @@ func getCaps(rpc *rpc.Client, defaultGasPrice *big.Int) (*big.Int, *big.Int, err
 	if err != nil {
 		return nil, nil, err
 	}
-	return tip.Mul(tip, common.Big2), feeCap.Mul(feeCap, common.Big2), err
+	return tip.Mul(tip.Add(tip, common.Big1), common.Big2), feeCap.Mul(feeCap.Add(feeCap, common.Big1), common.Big2), err
 }

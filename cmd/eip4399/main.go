@@ -32,7 +32,7 @@ func main() {
 	}
 	fmt.Printf("Nonce: %v\n", nonce)
 	gp, _ := backend.SuggestGasPrice(context.Background())
-	tx := types.NewContractCreation(nonce, common.Big1, 500000, gp.Mul(gp, common.Big2), []byte{0x44, 0x44, 0x55})
+	tx := types.NewContractCreation(nonce, common.Big1, 500000, gp.Mul(gp.Add(gp, common.Big1), common.Big2), []byte{0x44, 0x44, 0x55})
 	signedTx, _ := types.SignTx(tx, types.NewLondonSigner(chainid), sk)
 	backend.SendTransaction(context.Background(), signedTx)
 }
@@ -59,7 +59,7 @@ func sendTx(sk *ecdsa.PrivateKey, backend *ethclient.Client, to common.Address, 
 	}
 	fmt.Printf("Nonce: %v\n", nonce)
 	gp, _ := backend.SuggestGasPrice(context.Background())
-	tx := types.NewTransaction(nonce, to, value, 500000, gp.Mul(gp, common.Big2), nil)
+	tx := types.NewTransaction(nonce, to, value, 500000, gp.Mul(gp.Add(gp, common.Big1), common.Big2), nil)
 	signedTx, _ := types.SignTx(tx, types.HomesteadSigner{}, sk)
 	backend.SendTransaction(context.Background(), signedTx)
 }

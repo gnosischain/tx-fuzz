@@ -13,6 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/params"
 	"github.com/tyler-smith/go-bip32"
 	"github.com/tyler-smith/go-bip39"
 )
@@ -36,7 +37,7 @@ func initAccounts(mnemonic string, startIdx, endIdx int) {
 		if err != nil {
 			panic(err)
 		}
-        key := masterKey
+		key := masterKey
 		for _, edge := range path {
 			key, err = key.NewChildKey(edge)
 			if err != nil {
@@ -58,7 +59,7 @@ func initAccounts(mnemonic string, startIdx, endIdx int) {
 		keys = append(keys, skHex)
 		addrs = append(addrs, addrHex)
 
-        fmt.Printf("Generated account derived at %v to send txs from: %v\n", idx, addrHex)
+		fmt.Printf("Generated account derived at %v to send txs from: %v\n", idx, addrHex)
 	}
 }
 
@@ -72,17 +73,20 @@ func airdrop(targetValue *big.Int) bool {
 		fmt.Printf("could not airdrop: %v\n", err)
 		return false
 	}
+	fmt.Printf("Target value for airdrop %v\n", new(big.Int).Div(targetValue, big.NewInt(params.Ether)))
 	for _, addr := range addrs {
 		to := common.HexToAddress(addr)
-        balance, err := backend.PendingBalanceAt(context.Background(), to)
-        if err != nil {
-            fmt.Printf("could not airdrop: %v\n", err)
-            return false
-        }
-        value := new(big.Int).Sub(targetValue, balance)
-        if value.Cmp(big.NewInt(0)) <= 0 {
-            continue
-        }
+		balance, err := backend.PendingBalanceAt(context.Background(), to)
+		if err != nil {
+			fmt.Printf("could not airdrop: %v\n", err)
+			return false
+		}
+		value := new(big.Int).Sub(targetValue, balance)
+		if value.Cmp(big.NewInt(0)) <= 0 {
+			fmt.Printf("Addr %v already has %v eth\n", to.Hex(), new(big.Int).Div(balance, big.NewInt(params.Ether)))
+			continue
+		}
+		fmt.Printf("Addr %v will be airdropped %v eth\n", to.Hex(), new(big.Int).Div(value, big.NewInt(params.Ether)))
 
 		nonce, err := backend.PendingNonceAt(context.Background(), sender)
 		if err != nil {
@@ -90,7 +94,7 @@ func airdrop(targetValue *big.Int) bool {
 			return false
 		}
 		gp, _ := backend.SuggestGasPrice(context.Background())
-		tx2 := types.NewTransaction(nonce, to, value, 21000, gp.Mul(gp, common.Big2), nil)
+		tx2 := types.NewTransaction(nonce, to, value, 21000, gp.Mul(gp.Add(gp, common.Big1), common.Big2), nil)
 		signedTx, _ := types.SignTx(tx2, types.LatestSignerForChainID(chainid), sk)
 		if err := backend.SendTransaction(context.Background(), signedTx); err != nil {
 			fmt.Printf("could not airdrop: %v\n", err)
