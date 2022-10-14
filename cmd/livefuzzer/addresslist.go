@@ -62,7 +62,7 @@ func initAccounts(mnemonic string, startIdx, endIdx int) {
 	}
 }
 
-func airdrop(value *big.Int) bool {
+func airdrop(targetValue *big.Int) bool {
 	client, sk, _ := getRealBackend()
 	backend := ethclient.NewClient(client)
 	sender := common.HexToAddress(txfuzz.ADDR)
@@ -73,12 +73,22 @@ func airdrop(value *big.Int) bool {
 		return false
 	}
 	for _, addr := range addrs {
+		to := common.HexToAddress(addr)
+        balance, err := backend.PendingBalanceAt(context.Background(), to)
+        if err != nil {
+            fmt.Printf("could not airdrop: %v\n", err)
+            return false
+        }
+        value := new(big.Int).Sub(targetValue, balance)
+        if value.Cmp(big.NewInt(0)) <= 0 {
+            continue
+        }
+
 		nonce, err := backend.PendingNonceAt(context.Background(), sender)
 		if err != nil {
 			fmt.Printf("could not airdrop: %v\n", err)
 			return false
 		}
-		to := common.HexToAddress(addr)
 		gp, _ := backend.SuggestGasPrice(context.Background())
 		tx2 := types.NewTransaction(nonce, to, value, 21000, gp.Mul(gp, common.Big2), nil)
 		signedTx, _ := types.SignTx(tx2, types.LatestSignerForChainID(chainid), sk)
