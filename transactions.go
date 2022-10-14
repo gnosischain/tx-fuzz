@@ -178,5 +178,8 @@ func getCaps(rpc *rpc.Client, defaultGasPrice *big.Int) (*big.Int, *big.Int, err
 		return nil, nil, err
 	}
 	feeCap, err := client.SuggestGasPrice(context.Background())
+	if err != nil {
+		return nil, nil, err
+	}
 	return tip.Mul(tip, common.Big2), feeCap.Mul(feeCap, common.Big2), err
 }
