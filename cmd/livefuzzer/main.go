@@ -29,7 +29,7 @@ import (
 var (
 	address      = "http://127.0.0.1:8545"
 	txPerAccount = 1000
-	airdropValue = new(big.Int).Mul(big.NewInt(int64(txPerAccount*100000)), big.NewInt(params.GWei))
+	airdropValue = big.NewInt(params.Ether)
 	corpus       [][]byte
 )
 
