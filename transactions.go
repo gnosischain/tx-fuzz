@@ -11,7 +11,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/ethereum/go-ethereum/params"
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
@@ -165,7 +164,7 @@ func new1559Tx(nonce uint64, to *common.Address, gasLimit uint64, chainID, tip, 
 
 func getCaps(rpc *rpc.Client, defaultGasPrice *big.Int) (*big.Int, *big.Int, error) {
 	if rpc == nil {
-        panic("rpc nil")
+		panic("rpc nil")
 	}
 	client := ethclient.NewClient(rpc)
 	tip, err := client.SuggestGasTipCap(context.Background())
