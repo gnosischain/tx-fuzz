@@ -94,7 +94,11 @@ func airdrop(targetValue *big.Int) bool {
 		}
 		gp, _ := backend.SuggestGasPrice(context.Background())
 		tx2 := types.NewTransaction(nonce, to, value, 21000, gp.Mul(gp.Add(gp, common.Big1), common.Big2), nil)
-		signedTx, _ := types.SignTx(tx2, types.LatestSignerForChainID(chainid), sk)
+		signedTx, err := types.SignTx(tx2, types.LatestSignerForChainID(chainid), sk)
+		if err != nil {
+			fmt.Printf("could not airdrop: %v\n", err)
+			return false
+		}
 		if err := backend.SendTransaction(context.Background(), signedTx); err != nil {
 			fmt.Printf("could not airdrop: %v\n", err)
 			return false
