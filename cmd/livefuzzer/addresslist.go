@@ -83,10 +83,10 @@ func airdrop(targetValue *big.Int) bool {
 		}
 		value := new(big.Int).Sub(targetValue, balance)
 		if value.Cmp(big.NewInt(0)) <= 0 {
-			fmt.Printf("Addr %v already has %v eth\n", to.Hex(), new(big.Int).Div(balance, big.NewInt(params.Ether)))
+			fmt.Printf("Addr %v already has %v eth\n", to.Hex(), balance)
 			continue
 		}
-		fmt.Printf("Addr %v will be airdropped %v eth\n", to.Hex(), new(big.Int).Div(value, big.NewInt(params.Ether)))
+		fmt.Printf("Addr %v will be airdropped %v eth\n", to.Hex(), value)
 
 		nonce, err := backend.PendingNonceAt(context.Background(), sender)
 		if err != nil {
