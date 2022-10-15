@@ -29,15 +29,15 @@ import (
 var (
 	address      = "http://127.0.0.1:8545"
 	txPerAccount = 1000
-	airdropValue = big.NewInt(params.Ether)
+	airdropValue = new(big.Int).Mul(big.NewInt(100), big.NewInt(params.Ether))
 	corpus       [][]byte
 )
 
 func main() {
-    if len(os.Args) == 1 {
-        fmt.Printf("%v <command> <rpc-url> <pvkey> <mnemonic> <start..end> [<hex-formatted-seed>] [<bool-access-list>]\n", os.Args[0])
-        return
-    }
+	if len(os.Args) == 1 {
+		fmt.Printf("%v <command> <rpc-url> <pvkey> <mnemonic> <start..end> [<hex-formatted-seed>] [<bool-access-list>]\n", os.Args[0])
+		return
+	}
 
 	if len(os.Args) < 6 || len(os.Args) > 8 {
 		panic("invalid amount of args, need from 6 to 8 args")
