@@ -13,7 +13,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/ethereum/go-ethereum/params"
 	"github.com/tyler-smith/go-bip32"
 	"github.com/tyler-smith/go-bip39"
 )
@@ -73,7 +72,7 @@ func airdrop(targetValue *big.Int) bool {
 		fmt.Printf("could not airdrop: %v\n", err)
 		return false
 	}
-	fmt.Printf("Target value for airdrop %v\n", new(big.Int).Div(targetValue, big.NewInt(params.Ether)))
+	fmt.Printf("Target value for airdrop %v wei\n", targetValue)
 	for _, addr := range addrs {
 		to := common.HexToAddress(addr)
 		balance, err := backend.PendingBalanceAt(context.Background(), to)
@@ -83,10 +82,10 @@ func airdrop(targetValue *big.Int) bool {
 		}
 		value := new(big.Int).Sub(targetValue, balance)
 		if value.Cmp(big.NewInt(0)) <= 0 {
-			fmt.Printf("Addr %v already has %v eth\n", to.Hex(), balance)
+			fmt.Printf("Addr %v already has %v wei\n", to.Hex(), balance)
 			continue
 		}
-		fmt.Printf("Addr %v will be airdropped %v eth\n", to.Hex(), value)
+		fmt.Printf("Addr %v will be airdropped %v wei\n", to.Hex(), value)
 
 		nonce, err := backend.PendingNonceAt(context.Background(), sender)
 		if err != nil {
@@ -101,6 +100,10 @@ func airdrop(targetValue *big.Int) bool {
 			return false
 		}
 		tx = signedTx
+	}
+	if tx == nil {
+		fmt.Printf("could not airdrop")
+		return false
 	}
 	// Wait for the last transaction to be mined
 	bind.WaitMined(context.Background(), backend, tx)
