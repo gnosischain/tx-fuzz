@@ -88,6 +88,7 @@ func main() {
 	case "spam":
 		for airdrop(airdropValue) {
 			SpamTransactions(uint64(txPerAccount), false, al, seed)
+			time.Sleep(10 * time.Second)
 		}
 	case "corpus":
 		cp, err := readCorpusElements(os.Args[2])

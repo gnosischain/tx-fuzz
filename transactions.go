@@ -3,6 +3,7 @@ package txfuzz
 import (
 	"context"
 	"errors"
+	"fmt"
 	"math/big"
 	"math/rand"
 
@@ -63,7 +64,7 @@ func RandomValidTx(rpc *rpc.Client, f *filler.Filler, sender common.Address, non
 	if al {
 		mod = 6
 	}
-	switch f.Byte() % byte(mod) {
+	switch f.Byte()%byte(mod-4) + 4 {
 	case 0:
 		// Legacy contract creation
 		return types.NewContractCreation(nonce, value, gas, gasPrice, code), nil
@@ -164,16 +165,16 @@ func new1559Tx(nonce uint64, to *common.Address, gasLimit uint64, chainID, tip, 
 
 func getCaps(rpc *rpc.Client, defaultGasPrice *big.Int) (*big.Int, *big.Int, error) {
 	if rpc == nil {
-		panic("rpc nil")
+		return nil, nil, fmt.Errorf("no rpc client")
 	}
 	client := ethclient.NewClient(rpc)
-	tip, err := client.SuggestGasTipCap(context.Background())
-	if err != nil {
-		return nil, nil, err
-	}
+	// tip, err := client.SuggestGasTipCap(context.Background())
+	// if err != nil {
+	// 	return nil, nil, err
+	// }
 	feeCap, err := client.SuggestGasPrice(context.Background())
 	if err != nil {
 		return nil, nil, err
 	}
-	return tip.Mul(tip.Add(tip, common.Big1), common.Big2), feeCap.Mul(feeCap.Add(feeCap, common.Big1), common.Big2), err
+	return common.Big1, feeCap.Mul(feeCap, common.Big2), err
 }
