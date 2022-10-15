@@ -165,12 +165,7 @@ func new1559Tx(nonce uint64, to *common.Address, gasLimit uint64, chainID, tip, 
 
 func getCaps(rpc *rpc.Client, defaultGasPrice *big.Int) (*big.Int, *big.Int, error) {
 	if rpc == nil {
-		tip := new(big.Int).Mul(big.NewInt(1), big.NewInt(params.GWei))
-		if defaultGasPrice.Cmp(tip) >= 0 {
-			feeCap := new(big.Int).Sub(defaultGasPrice, tip)
-			return tip, feeCap, nil
-		}
-		return big.NewInt(0), defaultGasPrice, nil
+        panic("rpc nil")
 	}
 	client := ethclient.NewClient(rpc)
 	tip, err := client.SuggestGasTipCap(context.Background())
