@@ -106,11 +106,7 @@ func main() {
 }
 
 func SpamTransactions(N uint64, fromCorpus bool, accessList bool, seed *int64) {
-	backend, _, err := getRealBackend()
-	if err != nil {
-		fmt.Printf("Could not get backend: %v\n", err)
-		return
-	}
+	backend, _ := getRealBackend()
 	var src rand.Rand
 	if seed == nil {
 		fmt.Println("No seed provided, creating one")
@@ -187,11 +183,7 @@ func SendBaikalTransactions(client *rpc.Client, key *ecdsa.PrivateKey, f *filler
 }
 
 func unstuckTransactions() {
-	backend, _, err := getRealBackend()
-	if err != nil {
-		fmt.Printf("Could not get backend: %v\n", err)
-		return
-	}
+	backend, _ := getRealBackend()
 	client := ethclient.NewClient(backend)
 	// Now let everyone spam baikal transactions
 	var wg sync.WaitGroup
@@ -223,7 +215,7 @@ func readCorpusElements(path string) ([][]byte, error) {
 }
 
 func send() {
-	backend, _, _ := getRealBackend()
+	backend, _ := getRealBackend()
 	client := ethclient.NewClient(backend)
 	to := common.HexToAddress(txfuzz.ADDR)
 	sk := crypto.ToECDSAUnsafe(common.FromHex(txfuzz.SK2))

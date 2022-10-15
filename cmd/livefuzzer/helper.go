@@ -14,15 +14,16 @@ import (
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
-func getRealBackend() (*rpc.Client, *ecdsa.PrivateKey, error) {
-	// eth.sendTransaction({from:personal.listAccounts[0], to:"0xb02A2EdA1b317FBd16760128836B0Ac59B560e9D", value: "100000000000000"})
-
+func getRealBackend() (*rpc.Client, *ecdsa.PrivateKey) {
 	sk := crypto.ToECDSAUnsafe(common.FromHex(txfuzz.SK))
 	if crypto.PubkeyToAddress(sk.PublicKey).Hex() != txfuzz.ADDR {
 		panic(fmt.Sprintf("wrong address want %s got %s", crypto.PubkeyToAddress(sk.PublicKey).Hex(), txfuzz.ADDR))
 	}
 	cl, err := rpc.Dial(address)
-	return cl, sk, err
+    if err != nil {
+        panic(err)
+    }
+	return cl, sk
 }
 
 func sendTx(sk *ecdsa.PrivateKey, backend *ethclient.Client, to common.Address, value *big.Int) error {

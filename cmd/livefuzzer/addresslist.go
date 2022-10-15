@@ -63,7 +63,7 @@ func initAccounts(mnemonic string, startIdx, endIdx int) {
 }
 
 func airdrop(targetValue *big.Int) bool {
-	client, sk, _ := getRealBackend()
+	client, sk := getRealBackend()
 	backend := ethclient.NewClient(client)
 	sender := common.HexToAddress(txfuzz.ADDR)
 	var tx *types.Transaction
