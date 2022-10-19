@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/ecdsa"
 	"fmt"
 	"math/big"
 	"strconv"
@@ -18,13 +19,13 @@ import (
 )
 
 var (
-	keys  []string
-	addrs []string
+	keys  []*ecdsa.PrivateKey
+	addrs []common.Address
 )
 
 func initAccounts(mnemonic string, startIdx, endIdx int) {
-	keys = make([]string, 0, endIdx-startIdx)
-	addrs = make([]string, 0, endIdx-startIdx)
+	keys = make([]*ecdsa.PrivateKey, 0, endIdx-startIdx)
+	addrs = make([]common.Address, 0, endIdx-startIdx)
 
 	masterKey, err := bip32.NewMasterKey(bip39.NewSeed(mnemonic, ""))
 	if err != nil {
@@ -48,17 +49,12 @@ func initAccounts(mnemonic string, startIdx, endIdx int) {
 		if err != nil {
 			panic(err)
 		}
+		addr := crypto.PubkeyToAddress(sk.PublicKey)
 
-		addrHex := crypto.PubkeyToAddress(sk.PublicKey).Hex()
-		skHex := "0x" + common.Bytes2Hex(crypto.FromECDSA(sk))
-		// Sanity check marshalling
-		if _, err := crypto.ToECDSA(crypto.FromECDSA(sk)); err != nil {
-			panic(err)
-		}
-		keys = append(keys, skHex)
-		addrs = append(addrs, addrHex)
+		keys = append(keys, sk)
+		addrs = append(addrs, addr)
 
-		fmt.Printf("Generated account derived at %v to send txs from: %v\n", idx, addrHex)
+		fmt.Printf("Generated account derived at %v to send txs from: %v\n", idx, addr.Hex())
 	}
 }
 
@@ -73,8 +69,7 @@ func airdrop(targetValue *big.Int) bool {
 		return false
 	}
 	fmt.Printf("Target value for airdrop %v wei\n", targetValue)
-	for _, addr := range addrs {
-		to := common.HexToAddress(addr)
+	for _, to := range addrs {
 		balance, err := backend.PendingBalanceAt(context.Background(), to)
 		if err != nil {
 			fmt.Printf("could not airdrop: %v\n", err)

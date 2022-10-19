@@ -17,7 +17,6 @@ import (
 
 	"github.com/MariusVanDerWijden/FuzzyVM/filler"
 	txfuzz "github.com/MariusVanDerWijden/tx-fuzz"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -81,6 +80,7 @@ func main() {
 	}
 
 	initAccounts(mnemonic, startIdx, endIdx)
+    watchBlocks()
 
 	switch os.Args[1] {
 	case "airdrop":
@@ -133,19 +133,17 @@ func SpamTransactions(N uint64, fromCorpus bool, accessList bool, seed *int64) {
 			f = filler.NewFiller(random)
 		}
 		// Start a fuzzing thread
-		go func(key, addr string, filler *filler.Filler) {
+		go func(key *ecdsa.PrivateKey, addr common.Address, filler *filler.Filler) {
 			defer wg.Done()
-			sk := crypto.ToECDSAUnsafe(common.FromHex(key))
-			SendBaikalTransactions(backend, sk, f, addr, N, accessList)
+			SendBaikalTransactions(backend, key, f, addr, N, accessList)
 		}(key, addrs[i], f)
 	}
 	wg.Wait()
 }
 
-func SendBaikalTransactions(client *rpc.Client, key *ecdsa.PrivateKey, f *filler.Filler, addr string, N uint64, al bool) {
+func SendBaikalTransactions(client *rpc.Client, key *ecdsa.PrivateKey, f *filler.Filler, sender common.Address, N uint64, al bool) {
 	backend := ethclient.NewClient(client)
 
-	sender := common.HexToAddress(addr)
 	chainid, err := backend.ChainID(context.Background())
 	if err != nil {
 		panic(err)
@@ -170,15 +168,6 @@ func SendBaikalTransactions(client *rpc.Client, key *ecdsa.PrivateKey, f *filler
 			fmt.Printf("Could not send tx{sender: %v, nonce: %v}: %v\n", sender.Hex(), tx.Nonce(), err)
 			continue
 		}
-		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
-		go func() {
-			defer cancel()
-			if _, err := bind.WaitMined(ctx, backend, signedTx); err != nil {
-				fmt.Printf("Wait mined failed for tx{sender: %v, nonce: %v}: %v\n", sender.Hex(), tx.Nonce(), err)
-			} else {
-				fmt.Printf("Included tx{sender: %v, nonce: %v}\n", sender.Hex(), tx.Nonce())
-			}
-		}()
 		time.Sleep(time.Second)
 	}
 }
@@ -190,10 +179,9 @@ func unstuckTransactions() {
 	var wg sync.WaitGroup
 	wg.Add(len(keys))
 	for i, key := range keys {
-		go func(key, addr string) {
-			sk := crypto.ToECDSAUnsafe(common.FromHex(key))
-			unstuck(sk, client, common.HexToAddress(addr), common.HexToAddress(addr), common.Big0, nil)
-			wg.Done()
+		go func(key *ecdsa.PrivateKey, addr common.Address) {
+			defer wg.Done()
+			unstuck(key, client, addr, addr, common.Big0, nil)
 		}(key, addrs[i])
 	}
 	wg.Wait()
