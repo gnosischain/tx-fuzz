@@ -64,7 +64,7 @@ func RandomValidTx(rpc *rpc.Client, f *filler.Filler, sender common.Address, non
 	if al {
 		mod = 6
 	}
-	switch f.Byte()%byte(mod-4) + 4 {
+	switch f.Byte()%byte(mod) {
 	case 0:
 		// Legacy contract creation
 		return types.NewContractCreation(nonce, value, gas, gasPrice, code), nil
