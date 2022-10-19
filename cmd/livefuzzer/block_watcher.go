@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/params"
 )
 
 var (
@@ -72,4 +73,10 @@ func processNewBlock(chainid *big.Int, block *types.Block) {
 		}
 		fmt.Printf("Included %v transaction in block %v - block gas usage was %v percent\n", txCount, block.NumberU64(), 100*block.GasUsed()/block.GasLimit())
 	}()
+
+	if lastBaseFee.Cmp(new(big.Int).Mul(big.NewInt(1000), big.NewInt(params.GWei))) > 0 {
+		delay *= 2
+	} else if lastGasUsage < 70 {
+		delay /= 2
+	}
 }

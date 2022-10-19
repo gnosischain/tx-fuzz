@@ -26,6 +26,7 @@ import (
 )
 
 var (
+	delay        = time.Second
 	verbose      = false
 	address      = "http://127.0.0.1:8545"
 	txPerAccount = 1000
@@ -177,10 +178,13 @@ func SendBaikalTransactions(client *rpc.Client, key *ecdsa.PrivateKey, f *filler
 			panic(err)
 		}
 		if err = backend.SendTransaction(context.Background(), signedTx); err != nil {
-			fmt.Printf("Could not send tx{sender: %v, nonce: %v}: %v\n", sender.Hex(), tx.Nonce(), err)
+			if verbose {
+				fmt.Printf("Could not send tx{sender: %v, nonce: %v}: %v\n", sender.Hex(), tx.Nonce(), err)
+			}
+			time.Sleep(time.Second)
 			continue
 		}
-		time.Sleep(time.Second)
+		time.Sleep(delay)
 	}
 }
 
