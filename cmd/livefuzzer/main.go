@@ -157,7 +157,7 @@ func SendBaikalTransactions(client *rpc.Client, key *ecdsa.PrivateKey, f *filler
 		}
 		tx, err := txfuzz.RandomValidTx(client, f, sender, nonce, nil, chainid, al)
 		if err != nil {
-			fmt.Printf("Could not create valid tx: %v\n", err)
+			// fmt.Printf("Could not create valid tx: %v\n", err)
 			continue
 		}
 		signedTx, err := types.SignTx(tx, types.NewLondonSigner(chainid), key)
