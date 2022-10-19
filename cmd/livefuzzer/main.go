@@ -26,6 +26,7 @@ import (
 )
 
 var (
+	verbose      = false
 	address      = "http://127.0.0.1:8545"
 	txPerAccount = 1000
 	airdropValue = new(big.Int).Mul(big.NewInt(100), big.NewInt(params.Ether))
@@ -79,8 +80,17 @@ func main() {
 		al = alArg
 	}
 
+	verbose = false
+	if len(os.Args) > 8 {
+		vArg, err := strconv.ParseBool(os.Args[8])
+		if err != nil {
+			panic(err)
+		}
+		verbose = vArg
+	}
+
 	initAccounts(mnemonic, startIdx, endIdx)
-    watchBlocks()
+	watchBlocks()
 
 	switch os.Args[1] {
 	case "airdrop":
@@ -157,7 +167,9 @@ func SendBaikalTransactions(client *rpc.Client, key *ecdsa.PrivateKey, f *filler
 		}
 		tx, err := txfuzz.RandomValidTx(client, f, sender, nonce, nil, chainid, al)
 		if err != nil {
-			// fmt.Printf("Could not create valid tx: %v\n", err)
+			if verbose {
+				fmt.Printf("Could not create valid tx: %v\n", err)
+			}
 			continue
 		}
 		signedTx, err := types.SignTx(tx, types.NewLondonSigner(chainid), key)

@@ -17,7 +17,7 @@ var (
 )
 
 func watchBlocks() {
-    fuzzerSenders = make(map[common.Address]struct{})
+	fuzzerSenders = make(map[common.Address]struct{})
 
 	for _, addr := range addrs {
 		// initialize senders to watch for
@@ -59,12 +59,17 @@ func processNewBlock(chainid *big.Int, block *types.Block) {
 	txs := block.Transactions()
 	signer := types.NewLondonSigner(chainid)
 	go func() {
+		txCount := 0
 		for _, tx := range txs {
 			if sender, err := types.Sender(signer, tx); err != nil {
 				panic(err)
 			} else if _, isFuzzerSender := fuzzerSenders[sender]; isFuzzerSender {
-				fmt.Printf("Included tx{sender: %v, nonce: %v} in block %v\n", sender.Hex(), tx.Nonce(), block.NumberU64())
+				txCount++
+				if verbose {
+					fmt.Printf("Included tx{sender: %v, nonce: %v} in block %v\n", sender.Hex(), tx.Nonce(), block.NumberU64())
+				}
 			}
 		}
+		fmt.Printf("Included %v transaction in block %v - block gas usage was %v percent\n", txCount, block.NumberU64(), 100*block.GasUsed()/block.GasLimit())
 	}()
 }
