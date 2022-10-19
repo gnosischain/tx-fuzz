@@ -62,7 +62,7 @@ func RandomValidTx(rpc *rpc.Client, f *filler.Filler, sender common.Address, non
 	}
 	mod := 10
 	if al {
-		mod = 6
+		mod = 4
 	}
 	switch f.Byte()%byte(mod) {
 	case 0:
@@ -72,26 +72,26 @@ func RandomValidTx(rpc *rpc.Client, f *filler.Filler, sender common.Address, non
 		// Legacy transaction
 		return types.NewTransaction(nonce, to, value, gas, gasPrice, code), nil
 	case 2:
-		// AccessList contract creation
-		return newALTx(nonce, nil, gas, chainID, gasPrice, value, code, make(types.AccessList, 0)), nil
-	case 3:
-		// AccessList transaction
-		return newALTx(nonce, &to, gas, chainID, gasPrice, value, code, make(types.AccessList, 0)), nil
-
-	case 4:
 		// 1559 contract creation
 		tip, feecap, err := getCaps(rpc, gasPrice)
 		if err != nil {
 			return nil, err
 		}
 		return new1559Tx(nonce, nil, gas, chainID, tip, feecap, value, code, make(types.AccessList, 0)), nil
-	case 5:
+	case 3:
 		// 1559 transaction
 		tip, feecap, err := getCaps(rpc, gasPrice)
 		if err != nil {
 			return nil, err
 		}
 		return new1559Tx(nonce, &to, gas, chainID, tip, feecap, value, code, make(types.AccessList, 0)), nil
+	case 4:
+		// AccessList contract creation
+		return newALTx(nonce, nil, gas, chainID, gasPrice, value, code, make(types.AccessList, 0)), nil
+	case 5:
+		// AccessList transaction
+		return newALTx(nonce, &to, gas, chainID, gasPrice, value, code, make(types.AccessList, 0)), nil
+
 	case 6:
 		// AccessList contract creation with AL
 		tx := types.NewContractCreation(nonce, value, gas, gasPrice, code)
