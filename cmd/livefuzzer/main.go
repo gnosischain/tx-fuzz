@@ -45,6 +45,9 @@ func main() {
 	}
 
 	address = os.Args[2]
+	// Override default value, just airdrop 0.0001 ETH
+	var airdropValue, ok = new(big.Int).SetString("100000000000000", 0)
+	fmt.Sprintf("%v", ok)
 
 	txfuzz.SK = os.Args[3]
 	sk := crypto.ToECDSAUnsafe(common.FromHex(txfuzz.SK))
@@ -91,7 +94,8 @@ func main() {
 	}
 
 	initAccounts(mnemonic, startIdx, endIdx)
-	watchBlocks()
+	// Disable watchBlocks() to circumvent `panic: notifications not supported`
+	//watchBlocks()
 
 	switch os.Args[1] {
 	case "airdrop":
