@@ -100,11 +100,13 @@ func main() {
 	switch os.Args[1] {
 	case "airdrop":
 		airdrop(airdropValue)
-	case "spam":
+	case "airdrop-spam":
 		for airdrop(airdropValue) {
 			SpamTransactions(uint64(txPerAccount), false, al, seed)
 			time.Sleep(10 * time.Second)
 		}
+	case "spam":
+		SpamTransactions(uint64(txPerAccount), false, al, seed)
 	case "corpus":
 		cp, err := readCorpusElements(os.Args[2])
 		if err != nil {
