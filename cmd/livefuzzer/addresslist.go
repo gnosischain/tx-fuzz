@@ -68,6 +68,19 @@ func airdrop(targetValue *big.Int) bool {
 		fmt.Printf("could not airdrop: %v\n", err)
 		return false
 	}
+
+	// Get nonce
+	fmt.Printf("getting nonce\n")
+	nonce, err := backend.PendingNonceAt(context.Background(), sender)
+	if err != nil {
+		fmt.Printf("could not get nonce: %v\n", err)
+		return false
+	}
+	fmt.Printf("Nonce: %v\n", nonce)
+	fmt.Printf("getting gas price\n")
+	gp, _ := backend.SuggestGasPrice(context.Background())
+	fmt.Printf("Gas Price: %v\n", gp)
+
 	fmt.Printf("Target value for airdrop %v wei\n", targetValue)
 	for _, to := range addrs {
 		balance, err := backend.PendingBalanceAt(context.Background(), to)
@@ -82,13 +95,14 @@ func airdrop(targetValue *big.Int) bool {
 		}
 		fmt.Printf("Addr %v will be airdropped %v wei\n", to.Hex(), value)
 
-		nonce, err := backend.PendingNonceAt(context.Background(), sender)
-		if err != nil {
-			fmt.Printf("could not airdrop: %v\n", err)
-			return false
-		}
-		gp, _ := backend.SuggestGasPrice(context.Background())
+		// nonce, err := backend.PendingNonceAt(context.Background(), sender)
+		// if err != nil {
+		// 	fmt.Printf("could not airdrop: %v\n", err)
+		// 	return false
+		// }
+		// gp, _ := backend.SuggestGasPrice(context.Background())
 		tx2 := types.NewTransaction(nonce, to, value, 21000, gp.Mul(gp.Add(gp, common.Big1), common.Big2), nil)
+		nonce++
 		signedTx, err := types.SignTx(tx2, types.LatestSignerForChainID(chainid), sk)
 		if err != nil {
 			fmt.Printf("could not airdrop: %v\n", err)
