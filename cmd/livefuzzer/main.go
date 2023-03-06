@@ -36,17 +36,18 @@ var (
 
 func main() {
 	if len(os.Args) == 1 {
-		fmt.Printf("%v <command> <rpc-url> <pvkey> <mnemonic> <start..end> [<hex-formatted-seed>] [<bool-access-list>]\n", os.Args[0])
+		fmt.Printf("%v <command> <rpc-url> <pvkey> <mnemonic> <start..end> <gas-price> [<hex-formatted-seed>] [<bool-access-list>]\n", os.Args[0])
 		return
 	}
 
-	if len(os.Args) < 6 || len(os.Args) > 8 {
-		panic("invalid amount of args, need from 6 to 8 args")
+	if len(os.Args) < 6 || len(os.Args) > 9 {
+		panic("invalid amount of args, need from 6 to 9 args")
 	}
 
 	address = os.Args[2]
 	// Override default value, just airdrop 0.0001 ETH
-	var airdropValue, ok = new(big.Int).SetString("100000000000000", 0)
+	//var airdropValue, ok = new(big.Int).SetString("100000000000000", 0)
+	var airdropValue, ok = new(big.Int).SetString("100000000000", 0)
 	fmt.Sprintf("%v", ok)
 
 	txfuzz.SK = os.Args[3]
@@ -68,16 +69,20 @@ func main() {
 		}
 	}
 
+	// Convert string to BigInt
+	gasPrice, ok := new(big.Int).SetString(os.Args[6], 0)
+	fmt.Sprintf("%v", ok)
+
 	var seed *int64
-	if len(os.Args) > 6 {
-		a := common.LeftPadBytes(common.FromHex(os.Args[6]), 8)
+	if len(os.Args) > 7 {
+		a := common.LeftPadBytes(common.FromHex(os.Args[7]), 8)
 		s := int64(binary.BigEndian.Uint64(a))
 		seed = &s
 	}
 
 	al := false
-	if len(os.Args) > 7 {
-		alArg, err := strconv.ParseBool(os.Args[7])
+	if len(os.Args) > 8 {
+		alArg, err := strconv.ParseBool(os.Args[8])
 		if err != nil {
 			panic(err)
 		}
@@ -85,8 +90,8 @@ func main() {
 	}
 
 	verbose = false
-	if len(os.Args) > 8 {
-		vArg, err := strconv.ParseBool(os.Args[8])
+	if len(os.Args) > 9 {
+		vArg, err := strconv.ParseBool(os.Args[9])
 		if err != nil {
 			panic(err)
 		}
@@ -118,6 +123,8 @@ func main() {
 		unstuckTransactions()
 	case "send":
 		send()
+	case "withdraw":
+		withdraw(gasPrice)
 	default:
 		fmt.Println("unrecognized option")
 	}

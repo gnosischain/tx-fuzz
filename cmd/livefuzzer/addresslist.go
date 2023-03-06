@@ -101,7 +101,8 @@ func airdrop(targetValue *big.Int) bool {
 		// 	return false
 		// }
 		// gp, _ := backend.SuggestGasPrice(context.Background())
-		tx2 := types.NewTransaction(nonce, to, value, 21000, gp.Mul(gp.Add(gp, common.Big1), common.Big2), nil)
+		// tx2 := types.NewTransaction(nonce, to, value, 21000, gp.Mul(gp.Add(gp, common.Big1), common.Big2), nil)
+		tx2 := types.NewTransaction(nonce, to, value, 21000, big.NewInt(0), nil)
 		nonce++
 		signedTx, err := types.SignTx(tx2, types.LatestSignerForChainID(chainid), sk)
 		if err != nil {
@@ -121,5 +122,63 @@ func airdrop(targetValue *big.Int) bool {
 	// Wait for the last transaction to be mined
 	bind.WaitMined(context.Background(), backend, tx)
 	fmt.Printf("airdrop succesful\n")
+	return true
+}
+
+func withdraw(gasPrice *big.Int) bool {
+	client, _ := getRealBackend()
+	backend := ethclient.NewClient(client)
+	recipient := common.HexToAddress(txfuzz.ADDR)
+	var tx *types.Transaction
+	chainid, err := backend.ChainID(context.Background())
+	if err != nil {
+		fmt.Printf("could not withdraw: %v\n", err)
+		return false
+	}
+
+	fmt.Printf("Gas Price: %v\n", gasPrice)
+
+	for idx, from := range addrs {
+		balance, err := backend.PendingBalanceAt(context.Background(), from)
+		if err != nil {
+			fmt.Printf("could not withdraw: %v\n", err)
+			return false
+		}
+
+		fmt.Printf("Addr %v\n", from.Hex())
+		fmt.Printf("Current Balance %v\n", balance)
+		if balance.Cmp(big.NewInt(0)) <= 0 {
+			fmt.Printf("Addr %v already has %v wei\n", from.Hex(), balance)
+			continue
+		}
+
+		nonce, err := backend.PendingNonceAt(context.Background(), from)
+		if err != nil {
+			fmt.Printf("could not get nonce: %v\n", err)
+			return false
+		}
+		value := new(big.Int).Sub(balance, big.NewInt(21000))
+		fmt.Printf("To withdraw:   %v\n", value)
+		fmt.Printf("Nonce: %v\n", nonce)
+
+		tx2 := types.NewTransaction(nonce, recipient, value, 21000, gasPrice, nil)
+		signedTx, err := types.SignTx(tx2, types.LatestSignerForChainID(chainid), keys[idx])
+		if err != nil {
+			fmt.Printf("could not withdraw: %v\n", err)
+			return false
+		}
+		if err := backend.SendTransaction(context.Background(), signedTx); err != nil {
+			fmt.Printf("could not withdraw: %v\n", err)
+			return false
+		}
+		tx = signedTx
+	}
+	if tx == nil {
+		fmt.Printf("could not withdraw")
+		return false
+	}
+	// Wait for the last transaction to be mined
+	bind.WaitMined(context.Background(), backend, tx)
+	fmt.Printf("withdraw succesful\n")
 	return true
 }
